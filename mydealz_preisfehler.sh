@@ -14,12 +14,13 @@ telegram_chat_id=""
 
 ## Start Script
 
-touch .tmp_file_lastknowndeal
-last_deal=$(cat .tmp_file_lastknowndeal)
+path=$(readlink -f $0 | xargs dirname)
+touch $path/.tmp_file_lastknowndeal
+last_deal=$(cat $path/.tmp_file_lastknowndeal)
 sleep 1
 #wellp, thats a long pipe
-wget --header "Cookie: sort_by=%22new%22" -qO- https://www.mydealz.de/search?q=$mydealz_search -O - | grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*" | awk '!seen[$0]++' | grep '/deals/' |  head -2 | tail -1 > .tmp_file_lastknowndeal
-new_deal=$(cat .tmp_file_lastknowndeal)
+wget --header "Cookie: sort_by=%22new%22" -qO- https://www.mydealz.de/search?q=$mydealz_search -O - | grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*" | awk '!seen[$0]++' | grep '/deals/' |  head -2 | tail -1 > $path/.tmp_file_lastknowndeal
+new_deal=$(cat $path/.tmp_file_lastknowndeal)
 sleep 1
 if [ "$last_deal" != "$new_deal" ]; then
         #new deal! telegram action in 3...2...1...
