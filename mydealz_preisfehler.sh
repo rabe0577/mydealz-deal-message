@@ -15,16 +15,22 @@ telegram_chat_id=""
 ## Start Script
 
 path=$(readlink -f $0 | xargs dirname)
-touch $path/.tmp_file_lastknowndeal
-last_deal=$(cat $path/.tmp_file_lastknowndeal)
+touch $path/.tmp_file_lastknowndeals
+last_deals=$(paste -sd'|' $path/.tmp_file_lastknowndeals)
 sleep 1
 #wellp, thats a long pipe
-wget --header "Cookie: sort_by=%22new%22" -qO- https://www.mydealz.de/search?q=$mydealz_search -O - | grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*" | awk '!seen[$0]++' | grep '/deals/' |  head -2 | tail -1 > $path/.tmp_file_lastknowndeal
-new_deal=$(cat $path/.tmp_file_lastknowndeal)
-sleep 1
-if [ "$last_deal" != "$new_deal" ]; then
-        #new deal! telegram action in 3...2...1...
-        #https://core.telegram.org/bots/api
-        URL="https://api.telegram.org/bot$telegram_token/sendMessage"
-        curl -s -X POST $URL -d chat_id=$telegram_chat_id -d text="$message_text $new_deal"
+wget --header "Cookie: sort_by=%22new%22" -qO- https://www.mydealz.de/search?q=$mydealz_search -O - | grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*" | awk '!seen[$0]++' | grep '/deals/' | tail -n +2 > $path/.tmp_file_lastknowndeals
+if [ -z $last_deals ]; then
+  last_deals=$(paste -sd'|' $path/.tmp_file_lastknowndeals | cut -d"|" -f 2-)
 fi
+sleep 1
+for new_deal in `cat $path/.tmp_file_lastknowndeals`; do
+  if [[ ! $new_deal =~ $(echo ^\($last_deals\)$) ]]; then
+    #new deal! telegram action in 3...2...1...
+    #https://core.telegram.org/bots/api
+    URL="https://api.telegram.org/bot$telegram_token/sendMessage"
+    curl -s -X POST $URL -d chat_id=$telegram_chat_id -d text="$message_text $new_deal"
+  else
+    break
+  fi
+done
