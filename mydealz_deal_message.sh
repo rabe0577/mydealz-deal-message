@@ -19,7 +19,7 @@ touch $path/.tmp_file_lastknowndeals
 last_deals=$(paste -sd'|' $path/.tmp_file_lastknowndeals)
 sleep 1
 #wellp, thats a long pipe
-wget --header "Cookie: sort_by=%22new%22" -qO- https://www.mydealz.de/search?q=$mydealz_search -O - | grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*" | awk '!seen[$0]++' | grep '/deals/' | tail -n +2 > $path/.tmp_file_lastknowndeals
+wget --header "Cookie: sort_by=%22new%22" --timeout=5 --tries=1 -qO- https://www.mydealz.de/search?q=$mydealz_search -O - | grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*" | awk '!seen[$0]++' | grep '/deals/' | tail -n +2 > $path/.tmp_file_lastknowndeals
 if [ -z $last_deals ]; then
   last_deals=$(paste -sd'|' $path/.tmp_file_lastknowndeals | cut -d"|" -f 2-)
 fi
