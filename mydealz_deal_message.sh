@@ -20,12 +20,12 @@ last_deals=$(paste -sd'|' $path/.tmp_file_lastknowndeals)
 sleep 1
 #wellp, thats a long pipe
 new_deals=$(wget --header "Cookie: sort_by=%22new%22" --timeout=5 --tries=1 -qO- https://www.mydealz.de/search?q=$mydealz_search -O - | grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*" | awk '!seen[$0]++' | grep 'mydealz.de/deals/')
-if [ -n "$new_deals" ]; then
-  echo $new_deals | tr " " "\n" > $path/.tmp_file_lastknowndeals
+if [ -n "$new_deals" ]; then    # Dont write in file if wget empty
+  (cat $path/.tmp_file_lastknowndeals; echo $new_deals | tr " " "\n") | awk '!seen[$0]++' | tee $path/.tmp_file_lastknowndeals 1> /dev/null
 else
   exit 0
 fi
-if [ -z $last_deals ]; then
+if [ -z $last_deals ]; then     # Echo last deal on the first run
   last_deals=$(paste -sd'|' $path/.tmp_file_lastknowndeals | cut -d"|" -f 2-)
 fi
 sleep 1
