@@ -9,6 +9,7 @@ mydealz_search="preisfehler"
 message_text="Preisfehler!"
 
 telegram_token=""
+# Get ChatID of User: https://api.telegram.org/bot[HTTP-TOKEN]/getUpdates
 telegram_chat_id=""
 
 
@@ -34,7 +35,9 @@ for new_deal in $new_deals; do
     #new deal! telegram action in 3...2...1...
     #https://core.telegram.org/bots/api
     URL="https://api.telegram.org/bot$telegram_token/sendMessage"
-    curl -s -X POST $URL -d chat_id=$telegram_chat_id -d text="$message_text $new_deal"
+    for chat_id in $telegram_chat_id; do
+      curl -s -X POST $URL -d chat_id=$chat_id -d text="$message_text $new_deal"
+    done
   else
     break
   fi
